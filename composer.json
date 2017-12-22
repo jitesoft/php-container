@@ -1,0 +1,30 @@
+{
+    "name": "jitesoft/container",
+    "description": "Simple naive implemented dependency container with constructor injection.",
+    "type": "library",
+    "require": {
+        "php": ">=7.2",
+        "psr/container": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5",
+        "squizlabs/php_codesniffer": "^3.2"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Johannes Tegnér",
+            "email": "johannes@jitesoft.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Jitesoft\\Container\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "files": [
+            "tests/TestObjects.php"
+        ]
+    }
+}
