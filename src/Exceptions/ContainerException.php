@@ -6,9 +6,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container\Exceptions;
 
-use Jitesoft\Exceptions\JitesoftException;
+use Exception;
 use Psr\Container\ContainerExceptionInterface;
 
-class ContainerException extends JitesoftException implements ContainerExceptionInterface {
+class ContainerException extends Exception implements ContainerExceptionInterface {
 
 }
