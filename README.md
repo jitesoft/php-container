@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/jitesoft/php-container.svg?branch=master)](https://travis-ci.org/jitesoft/php-container)
 
+[![codecov](https://codecov.io/gh/jitesoft/php-container/branch/master/graph/badge.svg)](https://codecov.io/gh/jitesoft/php-container)
+
 Simple and naïve implementation of a dependency container with constructor injection.  
 
 ## Usage
