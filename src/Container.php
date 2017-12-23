@@ -23,6 +23,16 @@ class Container implements ContainerInterface {
     protected static $container = [];
 
     /**
+     * Container constructor.
+     * @param array $bindings
+     */
+    public function __construct(array $bindings = []) {
+        foreach ($bindings as $abstract => $concrete) {
+            $this->set($abstract, $concrete);
+        }
+    }
+
+    /**
      * Clear the container.
      */
     public function clear() {
@@ -48,7 +58,7 @@ class Container implements ContainerInterface {
             );
         }
 
-        if (!is_string($concrete)) {
+        if (!is_string($concrete) || !class_exists($concrete)) {
             self::$container[$abstract] = $abstract;
             self::$instances[$abstract] = $concrete;
             return true;

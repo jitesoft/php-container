@@ -10,7 +10,6 @@ use Jitesoft\Container\Container;
 use Jitesoft\Container\Exceptions\ContainerException;
 use Jitesoft\Container\Exceptions\NotFoundException;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 
 class ContainerTest extends TestCase {
 
@@ -25,6 +24,16 @@ class ContainerTest extends TestCase {
     protected function tearDown() {
         parent::tearDown();
         $this->container->clear();
+    }
+
+    public function testConstructorWithParams() {
+        $container = new Container([
+            'a' => 'b',
+            TestInterface_C::class => TestClass_C::class
+        ]);
+
+        $this->assertEquals('b', $container->get('a'));
+        $this->assertInstanceOf(TestClass_C::class, $container->get(TestInterface_C::class));
     }
 
     public function testSetPrimitiveValue() {
