@@ -158,4 +158,20 @@ class ContainerTest extends TestCase {
         $this->assertFalse($this->container->has('ABCD'));
     }
 
+    public function testUnset() {
+        $this->container->set(TestInterface_A::class, TestClass_A::class);
+        $this->assertTrue($this->container->has(TestInterface_A::class));
+        $this->container->unset(TestInterface_A::class);
+        $this->assertFalse($this->container->has(TestInterface_A::class));
+    }
+
+    public function testRebind() {
+        $this->container->set(TestInterface_A::class, TestClass_A::class);
+        $this->assertTrue($this->container->has(TestInterface_A::class));
+        $this->container->unset(TestInterface_A::class);
+        $this->assertFalse($this->container->has(TestInterface_A::class));
+        $this->container->set(TestInterface_A::class, TestClass_A::class);
+        $this->assertTrue($this->container->has(TestInterface_A::class));
+    }
+
 }
