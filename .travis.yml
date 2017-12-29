@@ -2,6 +2,7 @@ language: php
 
 php:
   - 7.2
+  - 7.1
 install:
   - composer install --prefer-source --no-interaction --dev
 script:
