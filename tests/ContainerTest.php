@@ -10,6 +10,7 @@ use Jitesoft\Container\Container;
 use Jitesoft\Container\Exceptions\ContainerException;
 use Jitesoft\Container\Exceptions\NotFoundException;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 class ContainerTest extends TestCase {
 
@@ -18,12 +19,39 @@ class ContainerTest extends TestCase {
 
     protected function setUp() {
         parent::setUp();
-        $this->container = new Container();
+        $this->container = Container::createContainer('container');
     }
 
     protected function tearDown() {
         parent::tearDown();
-        $this->container->clear();
+        Container::removeContainer('container');
+    }
+
+    public function testCreateContainer() {
+        $container = Container::createContainer('Test');
+        $this->assertInstanceOf(ContainerInterface::class, $container);
+        $this->assertInstanceOf(Container::class, $container);
+        Container::removeContainer('Test');
+    }
+
+    public function testCreateContainerExists() {
+        Container::createContainer('Test');
+        try {
+            Container::createContainer('Test');
+        } catch (ContainerException $ex) {
+            $this->assertEquals('An entry with the id "Test" already exists.', $ex->getMessage());
+        }
+
+        Container::removeContainer('Test');
+    }
+
+    public function testGetExistingContainer() {
+        $this->assertSame($this->container, Container::getContainer('container'));
+    }
+
+    public function testGetNewContainer() {
+        $this->assertNotSame($this->container, Container::getContainer('Test'));
+        Container::removeContainer('Test');
     }
 
     public function testConstructorWithParams() {
@@ -129,14 +157,13 @@ class ContainerTest extends TestCase {
     }
 
     public function testGetFailed() {
-        $this->container->set(TestInterface_A::class, TestClass_A::class);
         $this->expectException(ContainerException::class);
         // When fetching the value, it will break on the constructor injection and throw an exception.
         $this->expectExceptionMessage(sprintf(
             'Could not locate an entry in the container with the id "%s".',
             TestInterface_B::class
         ));
-        $this->container->get(TestInterface_A::class);
+        $this->container->get(TestInterface_B::class);
     }
 
     public function testHasPrimitiveValue() {
@@ -165,6 +192,12 @@ class ContainerTest extends TestCase {
         $this->assertFalse($this->container->has(TestInterface_A::class));
     }
 
+    public function testUnsetFail() {
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Could not remove the given entity because it was not set.');
+        $this->container->unset('not-exist!');
+    }
+
     public function testRebind() {
         $this->container->set(TestInterface_A::class, TestClass_A::class);
         $this->assertTrue($this->container->has(TestInterface_A::class));
@@ -172,6 +205,72 @@ class ContainerTest extends TestCase {
         $this->assertFalse($this->container->has(TestInterface_A::class));
         $this->container->set(TestInterface_A::class, TestClass_A::class);
         $this->assertTrue($this->container->has(TestInterface_A::class));
+    }
+
+    public function testClear() {
+        $this->container->set(TestInterface_A::class, TestClass_A::class);
+        $this->container->set(TestInterface_B::class, TestClass_B::class);
+
+        $this->assertTrue($this->container->has(TestInterface_A::class));
+        $this->assertTrue($this->container->has(TestInterface_B::class));
+
+        $this->container->clear();
+
+        $this->assertFalse($this->container->has(TestInterface_A::class));
+        $this->assertFalse($this->container->has(TestInterface_B::class));
+    }
+
+    public function testGetNoConstructorBound() {
+        $this->container->set(TestClass_D::class, TestClass_D::class);
+        $this->assertInstanceOf(TestClass_D::class, $this->container->get(TestClass_D::class));
+    }
+
+    public function testGetNoBinding() {
+        $this->container->set(TestClass_E::class, TestClass_E::class);
+        $result = $this->container->get(TestClass_E::class);
+        $this->assertInstanceOf(TestClass_E::class, $result);
+        $this->assertInstanceOf(TestClass_D::class, $result->obj);
+    }
+
+    public function testGetNoTypehint() {
+        $this->container->set(TestClass_F::class, TestClass_F::class);
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Constructor parameter "someObject" could not be created.');
+        $this->container->get(TestClass_F::class);
+    }
+
+    public function testConstructorParamObjBind() {
+        TestClass_C::$counter = 0;
+        $this->container->set(TestInterface_C::class, new TestClass_C());
+        $this->container->set(TestInterface_B::class, TestClass_B::class);
+        $out = $this->container->get(TestInterface_B::class);
+
+        $this->assertInstanceOf(TestInterface_B::class, $out);
+        $this->assertInstanceOf(TestInterface_C::class, $out->obj);
+        $this->assertEquals(1, $out->obj->id);
+
+        $out2 = $this->container->get(TestInterface_B::class);
+        $this->assertEquals(1, $out2->obj->id);
+        $this->assertNotSame($out, $out2);
+    }
+
+    public function testOffsetHas() {
+        $this->container->set(TestClass_E::class, TestClass_E::class);
+        $this->assertFalse(isset($this->container['null']));
+        $this->assertTrue(isset($this->container[TestClass_E::class]));
+    }
+
+    public function testOffsetUnset() {
+        $this->container->set(TestInterface_A::class, TestClass_A::class);
+        $this->assertTrue($this->container->has(TestInterface_A::class));
+        unset($this->container[TestInterface_A::class]);
+        $this->assertFalse($this->container->has(TestInterface_A::class));
+    }
+
+    public function testOffsetUnsetFail() {
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Could not remove the given entity because it was not set.');
+        unset($this->container['not-exist!']);
     }
 
 }

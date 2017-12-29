@@ -40,3 +40,23 @@ class TestClass_C implements TestInterface_C {
     }
 
 }
+
+class TestClass_D {
+
+}
+
+class TestClass_E {
+
+    public $obj;
+
+    public function __construct(TestClass_D $obj) {
+        $this->obj = $obj;
+    }
+}
+
+class TestClass_F {
+
+    public function __construct($someObject) {
+    }
+
+}
