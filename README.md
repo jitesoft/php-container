@@ -12,15 +12,17 @@ Simple and naïve implementation of a dependency container with constructor inje
 
 The container binds a key to a value where the value can be any type or a class name.  
 
-If it is a type, object, primitive or the likes, it will store the instance as bound, the same object will be 
-returned at each `get` call.  
+If it is a object, primitive or any type of instance, it will store the instance as a static object, 
+that is: the same object will be returned at each `get` call. While if a class name is passed the container
+will try to create an instance of the class on each `get` call. If it can not create an instance, a NotFoundException 
+or ContainerException will be thrown.
+
 The binding can be done at creation by passing an associative array into the constructor, or by using the `set` 
-method. To re-bind, the key have to be un-set first by using the `unset` method.  
-Fetching the value is easily done with the `get` method.
-If a class name is passed, the container will try to create an instance from the class and will try to inject any 
-constructor parameters which are type-hinted and bound. If it can not, an exception will be thrown.
+method. To re-bind, the key have to be un-set first by using the `unset` or `offsetUnset` (`unset($c['id'])`) method.  
 
 The container implements the [PSR-11](https://github.com/container-interop/fig-standards/blob/master/proposed/container.md) Container interface.
+Further, the container implements the `ArrayAccess` interface, enabling fetching by using the array index syntax as: `$container[Interface::class]`.  
+
 
 ### Example code
 
@@ -31,6 +33,13 @@ $container = new Container([
   SpecificInterface::class => SpecificImplementation::class
 ]);
 
+// It is also possible to create or fetch a container through the following static methods:
+Container::createContainer('identifier1');
+Container::getContainer('identifier2');
+
+// When containers are fetched through the static methods and one should be removed, use the static removeContainer method:
+Container::removeContainer('identifier1');
+
 // Or with the set method.
 $container->set(AnotherInterface::class, AnotherClass::class);
 
@@ -39,6 +48,7 @@ $container->set(AnotherInterface::class, AnotherClass::class);
 
 // Unset the mapping to remove it. Then it's okay to use the same interface as key again.
 $container->unset(AnotherInterface::class);
+
 
 // Fetch a mapped value from the container with get. In this case the instance will be of the AnotherClass type.
 $specificInstance = $container->get(SpecificInterface::class);
@@ -56,3 +66,18 @@ $container->set(SomeOtherInterface::class, new SomeClass());
 ## License
 
 MIT
+
+
+## Changes
+
+### 2.0.0
+
+The inner containers are no longer static, instead there is static `createContainer`, `getContainer` and `removeContainer` 
+methods which uses a inner static container to store the user defined containers.  
+Each container has its own bindings now.  
+
+The container now implements the `ArrayAccess` interface, which allows for using the standard array syntax (hence using the 
+container as a associative array if wanted).
+
+Improved tests which now covers 100% of the code base.
+
