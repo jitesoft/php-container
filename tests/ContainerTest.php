@@ -178,6 +178,8 @@ class ContainerTest extends TestCase {
         $this->assertFalse($this->container->has(TestInterface_A::class));
         $this->container->set(TestInterface_A::class, TestClass_A::class);
         $this->assertTrue($this->container->has(TestInterface_A::class));
+        $this->container->rebind(TestInterface_A::class, TestClass_D::class);
+        $this->assertInstanceOf(TestClass_D::class, $this->container->get(TestInterface_A::class));
     }
 
     public function testClear() {
@@ -244,6 +246,11 @@ class ContainerTest extends TestCase {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Could not remove the given entity because it was not set.');
         unset($this->container['not-exist!']);
+    }
+
+    public function testOffsetGet() {
+        $this->container->set('Test', 'abc123');
+        $this->assertSame('abc123', $this->container['Test']);
     }
 
 }

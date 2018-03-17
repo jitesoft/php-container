@@ -7,7 +7,9 @@
 namespace Jitesoft\Container;
 
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
+use Jitesoft\Exceptions\Psr\Container\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 final class ContainerFactory {
 
@@ -53,7 +55,7 @@ final class ContainerFactory {
      */
     public static function remove(string $identifier): bool {
         if (!self::has($identifier)) {
-            throw new ContainerException(sprintf('Could not find a Container with the identifier %s.', $identifier));
+            throw new NotFoundException(sprintf('Could not find a Container with the identifier %s.', $identifier));
         }
 
         unset(self::$containers[$identifier]);
@@ -61,15 +63,24 @@ final class ContainerFactory {
     }
 
     /**
+     * Remove all containers.
+     * This will only remove the containers from the ContainerFactory, any
+     * current references to given containers will remain.
+     */
+    public static function clear() {
+        self::$containers = [];
+    }
+
+    /**
      * Get an existing container.
      *
      * @param string $identifier
      * @return Container
-     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public static function get(string $identifier): Container {
         if (!self::has($identifier)) {
-            throw new ContainerException(sprintf('Could not find a Container with the identifier %s.', $identifier));
+            throw new NotFoundException(sprintf('Could not find a Container with the identifier %s.', $identifier));
         }
 
         return self::$containers[$identifier];

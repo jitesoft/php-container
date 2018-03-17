@@ -12,6 +12,7 @@ use Jitesoft\Container\Exceptions\ContainerException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class ContainerFactoryTest extends TestCase {
 
@@ -25,7 +26,7 @@ class ContainerFactoryTest extends TestCase {
 
     protected function tearDown() {
         parent::tearDown();
-        ContainerFactory::remove('container');
+        ContainerFactory::clear();
     }
 
     public function testCreateContainer() {
@@ -56,6 +57,29 @@ class ContainerFactoryTest extends TestCase {
     public function testGetNewContainer() {
         $this->assertNotSame($this->container, ContainerFactory::create('Test'));
         ContainerFactory::remove('Test');
+    }
+
+    public function testAllAndClear() {
+        ContainerFactory::clear();
+        $this->assertEmpty(ContainerFactory::all());
+        ContainerFactory::create('abc');
+        ContainerFactory::create('abc123');
+        ContainerFactory::create('abc123hij');
+        $this->assertCount(3, ContainerFactory::all());
+        ContainerFactory::remove('abc');
+        $this->assertCount(2, ContainerFactory::all());
+    }
+
+    public function testGetNotFound() {
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Could not find a Container with the identifier abc123123.');
+        ContainerFactory::get('abc123123');
+    }
+
+    public function testRemoveNotFound() {
+        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectExceptionMessage('Could not find a Container with the identifier abc123123.');
+        ContainerFactory::remove('abc123123');
     }
 
 }

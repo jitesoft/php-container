@@ -9,6 +9,7 @@ namespace Jitesoft\Container\Tests;
 use Jitesoft\Container\Container;
 use Jitesoft\Container\Injector;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class InjectorTest extends TestCase {
@@ -118,6 +119,12 @@ class InjectorTest extends TestCase {
         );
         $this->assertEquals(1, $out2->obj->id);
         $this->assertNotSame($out, $out2);
+    }
+
+    public function testCreateInvalidType() {
+        $this->expectException(ContainerExceptionInterface::class);
+        $this->expectExceptionMessage('Failed to create reflection class from given class name.');
+        $this->injector->create('InvalidClassName123123');
     }
 
 }
