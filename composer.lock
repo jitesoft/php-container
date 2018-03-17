@@ -4,8 +4,52 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "9cc85c4946a359be149d27d66cf2f8d9",
+    "content-hash": "a6b7a8b5a7e0359bcaedee769e912a07",
     "packages": [
+        {
+            "name": "jitesoft/exceptions",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jitesoft/php-exceptions.git",
+                "reference": "c2ef6b34304c226f47e18b3fb205ca3f7f8f7cfc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jitesoft/php-exceptions/zipball/c2ef6b34304c226f47e18b3fb205ca3f7f8f7cfc",
+                "reference": "c2ef6b34304c226f47e18b3fb205ca3f7f8f7cfc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">7.1",
+                "psr/container": "^1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0",
+                "squizlabs/php_codesniffer": "3.0.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jitesoft\\Exceptions\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Tegnér",
+                    "email": "johannes@jitesoft.com"
+                }
+            ],
+            "description": "Common php exceptions used in Jitesoft projects.",
+            "keywords": [
+                "exceptions"
+            ],
+            "time": "2018-03-17T14:41:49+00:00"
+        },
         {
             "name": "psr/container",
             "version": "1.0.0",

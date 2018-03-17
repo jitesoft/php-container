@@ -7,96 +7,34 @@
 namespace Jitesoft\Container;
 
 use ArrayAccess;
-use Jitesoft\Container\Exceptions\ContainerException;
-use Jitesoft\Container\Exceptions\NotFoundException;
+use Jitesoft\Exceptions\Psr\Container\ContainerException;
+use Jitesoft\Exceptions\Psr\Container\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionClass;
-use ReflectionParameter;
 
 /**
  * Simple naive implementation of a Dependency container with constructor injection.
  */
 class Container implements ContainerInterface, ArrayAccess {
 
-    // region Static functions.
-
-    private static function getContainers(): Container {
-        static $containers = null;
-
-        if ($containers === null) {
-            $containers = new Container();
-        }
-
-        return $containers;
-    }
-
-    /**
-     * Fetch a container.
-     * If the container is not yet named, a new one will be created without any bindings.
-     *
-     * @param string $identifier  - The unique identifier of the container.
-     * @return ContainerInterface - The container requested.
-     */
-    public static function getContainer($identifier = 'default'): ContainerInterface {
-        $container = self::getContainers();
-
-        if (!$container->has($identifier)) {
-            return self::createContainer($identifier);
-        }
-
-        return $container[$identifier];
-    }
-
-    /**
-     * Create a new container with given unique identifier.
-     *
-     * @param string                  $identifier - Unique identifier to use for the container.
-     * @param array                   $bindings   - Bindings, defaults to no bindings.
-     * @param ContainerInterface|null $container  - A container (implementing PSR-11 container interface) to use.
-     *
-     * @return ContainerInterface The newly created container.
-     *
-     * @throws ContainerException If the unique identifier is already used.
-     */
-    public static function createContainer(string $identifier,
-                                            array $bindings = [],
-                                            ContainerInterface $container = null): ContainerInterface {
-        $c = self::getContainers();
-
-        $newContainer = (null === $container ? new Container($bindings) : $container);
-
-        $c[$identifier] = $newContainer;
-        return $c[$identifier];
-    }
-
-    /**
-     * Remove a given container.
-     *
-     * @param string $identifier - Container identifier.
-     */
-    public static function removeContainer(string $identifier) {
-        $container = self::getContainers();
-        $container->unset($identifier);
-    }
-
-    // endregion
-
     protected $instances = [];
     protected $container = [];
+    protected $injector;
 
     /**
      * Container constructor.
      *
      * @param array $bindings - Container bindings.
      *
-     * @throws ContainerException
+     * @throws ContainerExceptionInterface
      */
     public function __construct(array $bindings = []) {
         foreach ($bindings as $abstract => $concrete) {
             $this->set($abstract, $concrete);
         }
+
+        $this->injector = new Injector($this);
     }
 
     /**
@@ -135,6 +73,21 @@ class Container implements ContainerInterface, ArrayAccess {
         return true;
     }
 
+    /**
+     * @param string $abstract
+     * @param $concrete
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function rebind(string $abstract, $concrete) {
+        $this->unset($abstract);
+        $this->set($abstract, $concrete);
+    }
+
+    /**
+     * @param string $id
+     * @throws NotFoundExceptionInterface
+     */
     public function unset(string $id) {
         if (!$this->has($id)) {
             throw new NotFoundException("Could not remove the given entity because it was not set.");
@@ -142,46 +95,6 @@ class Container implements ContainerInterface, ArrayAccess {
 
         unset($this->container[$id]);
         unset($this->instances[$id]);
-    }
-
-    private function getTypeHint(ReflectionParameter $param) {
-        if ($param->getClass()) {
-            return $param->getClass()->getName();
-        }
-
-        throw new NotFoundException(sprintf(
-                'Constructor parameter "%s" could not be created.',
-                $param->getName()
-            )
-        );
-    }
-
-    private function createObject($className) {
-        $class = new ReflectionClass($className);
-        $out   = null;
-
-        if ($class->getConstructor() !== null) {
-            $ctr    = $class->getConstructor();
-            $params = $ctr->getParameters();
-
-            $inParam = [];
-            foreach ($params as $param) {
-                $type = $this->getTypeHint($param);
-                try {
-                    $get = $this->get($type);
-                } catch (NotFoundException $ex) {
-                    $get = $this->createObject($type);
-                }
-
-                $inParam[] = $get;
-            }
-
-            $out = $class->newInstanceArgs($inParam);
-        } else {
-            $out = $class->newInstanceWithoutConstructor();
-        }
-
-        return $out;
     }
 
     /**
@@ -198,7 +111,7 @@ class Container implements ContainerInterface, ArrayAccess {
         if (array_key_exists($id, $this->instances)) {
             return $this->instances[$id];
         } else if (array_key_exists($id, $this->container)) {
-            return $this->createObject($this->container[$id]);
+            return $this->injector->create($this->container[$id]);
         }
 
         throw new NotFoundException(
@@ -221,24 +134,35 @@ class Container implements ContainerInterface, ArrayAccess {
         return array_key_exists($id, $this->container);
     }
 
-    // region ArrayAccess implementation.
-
     public function offsetExists($offset) {
         return $this->has($offset);
     }
 
+    /**
+     * @param mixed $offset
+     * @return mixed
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function offsetGet($offset) {
         return $this->get($offset);
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     * @throws ContainerExceptionInterface
+     */
     public function offsetSet($offset, $value) {
         $this->set($offset, $value);
     }
 
+    /**
+     * @param mixed $offset
+     * @throws NotFoundExceptionInterface
+     */
     public function offsetUnset($offset) {
         $this->unset($offset);
     }
-
-    // endregion
 
 }
