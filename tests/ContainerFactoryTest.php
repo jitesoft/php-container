@@ -10,6 +10,7 @@ use Jitesoft\Container\Container;
 use Jitesoft\Container\ContainerFactory;
 use Jitesoft\Container\Exceptions\ContainerException;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
 class ContainerFactoryTest extends TestCase {
@@ -38,7 +39,7 @@ class ContainerFactoryTest extends TestCase {
         ContainerFactory::create('Test');
         try {
             ContainerFactory::create('Test');
-        } catch (ContainerException $ex) {
+        } catch (ContainerExceptionInterface $ex) {
             $this->assertEquals(
                 'Invalid identifier. A container with the identifier Test already exist.',
                 $ex->getMessage()

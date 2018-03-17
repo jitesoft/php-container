@@ -8,9 +8,9 @@ namespace Jitesoft\Container\Tests;
 
 use Jitesoft\Container\Container;
 use Jitesoft\Container\ContainerFactory;
-use Jitesoft\Container\Exceptions\ContainerException;
-use Jitesoft\Container\Exceptions\NotFoundException;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class ContainerTest extends TestCase {
 
@@ -64,7 +64,7 @@ class ContainerTest extends TestCase {
     public function testSetDuplicatedId() {
         $this->assertTrue($this->container->set(TestInterface_A::class, new class {
         }));
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage(
             sprintf('An entry with the id "%s" already exists.', TestInterface_A::class)
         );
@@ -122,7 +122,7 @@ class ContainerTest extends TestCase {
     }
 
     public function testGetInvalidId() {
-        $this->expectException(NotFoundException::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage(
             sprintf('Could not locate an entry in the container with the id "%s".', TestInterface_A::class)
         );
@@ -130,7 +130,7 @@ class ContainerTest extends TestCase {
     }
 
     public function testGetFailed() {
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerExceptionInterface::class);
         // When fetching the value, it will break on the constructor injection and throw an exception.
         $this->expectExceptionMessage(sprintf(
             'Could not locate an entry in the container with the id "%s".',
@@ -166,7 +166,7 @@ class ContainerTest extends TestCase {
     }
 
     public function testUnsetFail() {
-        $this->expectException(NotFoundException::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Could not remove the given entity because it was not set.');
         $this->container->unset('not-exist!');
     }
@@ -207,7 +207,7 @@ class ContainerTest extends TestCase {
 
     public function testGetNoTypehint() {
         $this->container->set(TestClass_F::class, TestClass_F::class);
-        $this->expectException(NotFoundException::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Constructor parameter "someObject" could not be created.');
         $this->container->get(TestClass_F::class);
     }
@@ -241,7 +241,7 @@ class ContainerTest extends TestCase {
     }
 
     public function testOffsetUnsetFail() {
-        $this->expectException(NotFoundException::class);
+        $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Could not remove the given entity because it was not set.');
         unset($this->container['not-exist!']);
     }

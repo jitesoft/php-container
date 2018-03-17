@@ -7,14 +7,11 @@
 namespace Jitesoft\Container;
 
 use ArrayAccess;
-use Jitesoft\Container\Exceptions\ContainerException;
-use Jitesoft\Container\Exceptions\NotFoundException;
+use Jitesoft\Exceptions\Psr\Container\ContainerException;
+use Jitesoft\Exceptions\Psr\Container\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionParameter;
 
 /**
  * Simple naive implementation of a Dependency container with constructor injection.
@@ -23,6 +20,7 @@ class Container implements ContainerInterface, ArrayAccess {
 
     protected $instances = [];
     protected $container = [];
+    protected $injector;
 
     /**
      * Container constructor.
@@ -35,6 +33,8 @@ class Container implements ContainerInterface, ArrayAccess {
         foreach ($bindings as $abstract => $concrete) {
             $this->set($abstract, $concrete);
         }
+
+        $this->injector = new Injector($this);
     }
 
     /**
@@ -77,7 +77,7 @@ class Container implements ContainerInterface, ArrayAccess {
      * @param string $abstract
      * @param $concrete
      * @throws ContainerExceptionInterface
-     * @throws NotFoundException
+     * @throws NotFoundExceptionInterface
      */
     public function rebind(string $abstract, $concrete) {
         $this->unset($abstract);
@@ -86,7 +86,7 @@ class Container implements ContainerInterface, ArrayAccess {
 
     /**
      * @param string $id
-     * @throws NotFoundException
+     * @throws NotFoundExceptionInterface
      */
     public function unset(string $id) {
         if (!$this->has($id)) {
@@ -95,57 +95,6 @@ class Container implements ContainerInterface, ArrayAccess {
 
         unset($this->container[$id]);
         unset($this->instances[$id]);
-    }
-
-    /**
-     * @param ReflectionParameter $param
-     * @return string
-     * @throws NotFoundException
-     */
-    private function getTypeHint(ReflectionParameter $param) {
-        if ($param->getClass()) {
-            return $param->getClass()->getName();
-        }
-
-        throw new NotFoundException(sprintf(
-                'Constructor parameter "%s" could not be created.',
-                $param->getName()
-            )
-        );
-    }
-
-    /**
-     * @param $className
-     * @return null|object
-     * @throws ContainerExceptionInterface
-     * @throws ReflectionException
-     */
-    private function createObject($className) {
-        $class = new ReflectionClass($className);
-        $out   = null;
-
-        if ($class->getConstructor() !== null) {
-            $ctr    = $class->getConstructor();
-            $params = $ctr->getParameters();
-
-            $inParam = [];
-            foreach ($params as $param) {
-                $type = $this->getTypeHint($param);
-                try {
-                    $get = $this->get($type);
-                } catch (NotFoundExceptionInterface $ex) {
-                    $get = $this->createObject($type);
-                }
-
-                $inParam[] = $get;
-            }
-
-            $out = $class->newInstanceArgs($inParam);
-        } else {
-            $out = $class->newInstanceWithoutConstructor();
-        }
-
-        return $out;
     }
 
     /**
@@ -162,11 +111,7 @@ class Container implements ContainerInterface, ArrayAccess {
         if (array_key_exists($id, $this->instances)) {
             return $this->instances[$id];
         } else if (array_key_exists($id, $this->container)) {
-            try {
-                return $this->createObject($this->container[$id]);
-            } catch (ReflectionException $ex) {
-                throw new ContainerException('Failed to get value from container.');
-            }
+            return $this->injector->create($this->container[$id]);
         }
 
         throw new NotFoundException(
@@ -188,8 +133,6 @@ class Container implements ContainerInterface, ArrayAccess {
     public function has($id) {
         return array_key_exists($id, $this->container);
     }
-
-    // region ArrayAccess implementation.
 
     public function offsetExists($offset) {
         return $this->has($offset);
@@ -216,12 +159,10 @@ class Container implements ContainerInterface, ArrayAccess {
 
     /**
      * @param mixed $offset
-     * @throws NotFoundException
+     * @throws NotFoundExceptionInterface
      */
     public function offsetUnset($offset) {
         $this->unset($offset);
     }
-
-    // endregion
 
 }

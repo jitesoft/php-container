@@ -6,7 +6,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
-use Jitesoft\Container\Exceptions\ContainerException;
+use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Psr\Container\ContainerExceptionInterface;
 
 final class ContainerFactory {
