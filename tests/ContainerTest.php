@@ -7,10 +7,10 @@
 namespace Jitesoft\Container\Tests;
 
 use Jitesoft\Container\Container;
+use Jitesoft\Container\ContainerFactory;
 use Jitesoft\Container\Exceptions\ContainerException;
 use Jitesoft\Container\Exceptions\NotFoundException;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 
 class ContainerTest extends TestCase {
 
@@ -19,39 +19,12 @@ class ContainerTest extends TestCase {
 
     protected function setUp() {
         parent::setUp();
-        $this->container = Container::createContainer('container');
+        $this->container = ContainerFactory::create('container');
     }
 
     protected function tearDown() {
         parent::tearDown();
-        Container::removeContainer('container');
-    }
-
-    public function testCreateContainer() {
-        $container = Container::createContainer('Test');
-        $this->assertInstanceOf(ContainerInterface::class, $container);
-        $this->assertInstanceOf(Container::class, $container);
-        Container::removeContainer('Test');
-    }
-
-    public function testCreateContainerExists() {
-        Container::createContainer('Test');
-        try {
-            Container::createContainer('Test');
-        } catch (ContainerException $ex) {
-            $this->assertEquals('An entry with the id "Test" already exists.', $ex->getMessage());
-        }
-
-        Container::removeContainer('Test');
-    }
-
-    public function testGetExistingContainer() {
-        $this->assertSame($this->container, Container::getContainer('container'));
-    }
-
-    public function testGetNewContainer() {
-        $this->assertNotSame($this->container, Container::getContainer('Test'));
-        Container::removeContainer('Test');
+        ContainerFactory::remove('container');
     }
 
     public function testConstructorWithParams() {
