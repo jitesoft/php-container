@@ -20,12 +20,11 @@ final class ContainerFactory {
      *
      * @param string $identifier
      * @param array $bindings
-     * @param bool $define If true, creates a define for the given identifier.
      * @return Container
      * @throws ContainerException
      * @throws ContainerExceptionInterface If the identifier already exist.
      */
-    public static function create(string $identifier, array $bindings = [], bool $define = false): Container {
+    public static function create(string $identifier, array $bindings = []): Container {
         if (self::has($identifier)) {
             throw new ContainerException(
                 sprintf('Invalid identifier. A container with the identifier %s already exist.', $identifier)
