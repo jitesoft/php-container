@@ -7,7 +7,6 @@
 namespace Jitesoft\Container\Tests;
 
 use Jitesoft\Container\Container;
-use Jitesoft\Container\ContainerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -19,12 +18,7 @@ class ContainerTest extends TestCase {
 
     protected function setUp() {
         parent::setUp();
-        $this->container = ContainerFactory::create('container');
-    }
-
-    protected function tearDown() {
-        parent::tearDown();
-        ContainerFactory::remove('container');
+        $this->container = new Container();
     }
 
     public function testConstructorWithParams() {
@@ -35,6 +29,19 @@ class ContainerTest extends TestCase {
 
         $this->assertEquals('b', $container->get('a'));
         $this->assertInstanceOf(TestClass_C::class, $container->get(TestInterface_C::class));
+    }
+
+    public function testConstructorWithSingletonParam() {
+        $container = new Container([
+           TestInterface_C::class => [
+               'singleton' => true,
+               'class' => TestClass_C::class
+           ]
+        ]);
+
+        $out = $container->get(TestInterface_C::class);
+        $this->assertInstanceOf(TestClass_C::class, $out);
+        $this->assertSame($out, $container->get(TestInterface_C::class));
     }
 
     public function testSetPrimitiveValue() {

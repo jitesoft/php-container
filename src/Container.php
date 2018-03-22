@@ -18,31 +18,33 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class Container implements ContainerInterface, ArrayAccess {
 
-    protected $instances = [];
-    protected $container = [];
-    protected $injector;
+    /** @var array|ContainerEntry[] */
+    protected $bindings = [];
 
     /**
      * Container constructor.
      *
      * @param array $bindings - Container bindings.
      *
-     * @throws ContainerExceptionInterface
+     * @throws ContainerException
      */
     public function __construct(array $bindings = []) {
         foreach ($bindings as $abstract => $concrete) {
-            $this->set($abstract, $concrete);
-        }
+            $singleton = false;
+            if (is_array($concrete)) {
+                $singleton = $concrete['singleton'];
+                $concrete  = $concrete['class'];
+            }
 
-        $this->injector = new Injector($this);
+            $this->set($abstract, $concrete, $singleton);
+        }
     }
 
     /**
      * Clear the container.
      */
     public function clear() {
-        $this->instances = [];
-        $this->container = [];
+        $this->bindings = [];
     }
 
     /**
@@ -51,37 +53,33 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @param string $abstract
      * @param object|string $concrete
-     *
-     * @throws ContainerExceptionInterface
+     * @param bool $singleton If the created object is intended to be treated as a single instance on creation.
      *
      * @return bool
+     * @throws ContainerException
      */
-    public function set(string $abstract, $concrete) {
+    public function set(string $abstract, $concrete, $singleton = false) {
         if ($this->has($abstract)) {
             throw new ContainerException(
                 sprintf('An entry with the id "%s" already exists.', $abstract)
             );
         }
 
-        if (!is_string($concrete) || !class_exists($concrete)) {
-            $this->container[$abstract] = $abstract;
-            $this->instances[$abstract] = $concrete;
-            return true;
-        }
-
-        $this->container[$abstract] = $concrete;
+        $this->bindings[$abstract] = new ContainerEntry($abstract, $concrete, $singleton);
         return true;
     }
 
     /**
      * @param string $abstract
      * @param $concrete
-     * @throws ContainerExceptionInterface
+     * @param bool $singleton
+     *
+     * @throws ContainerException
      * @throws NotFoundExceptionInterface
      */
-    public function rebind(string $abstract, $concrete) {
+    public function rebind(string $abstract, $concrete, $singleton = false) {
         $this->unset($abstract);
-        $this->set($abstract, $concrete);
+        $this->set($abstract, $concrete, $singleton);
     }
 
     /**
@@ -93,8 +91,7 @@ class Container implements ContainerInterface, ArrayAccess {
             throw new NotFoundException("Could not remove the given entity because it was not set.");
         }
 
-        unset($this->container[$id]);
-        unset($this->instances[$id]);
+        unset($this->bindings[$id]);
     }
 
     /**
@@ -108,10 +105,8 @@ class Container implements ContainerInterface, ArrayAccess {
      * @return mixed Entry.
      */
     public function get($id) {
-        if (array_key_exists($id, $this->instances)) {
-            return $this->instances[$id];
-        } else if (array_key_exists($id, $this->container)) {
-            return $this->injector->create($this->container[$id]);
+        if (array_key_exists($id, $this->bindings)) {
+            return $this->bindings[$id]->resolve(new Injector($this));
         }
 
         throw new NotFoundException(
@@ -131,7 +126,7 @@ class Container implements ContainerInterface, ArrayAccess {
      * @return bool
      */
     public function has($id) {
-        return array_key_exists($id, $this->container);
+        return array_key_exists($id, $this->bindings);
     }
 
     public function offsetExists($offset) {

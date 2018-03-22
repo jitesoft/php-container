@@ -6,7 +6,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
-use function array_key_exists;
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
@@ -20,6 +19,8 @@ use ReflectionParameter;
  * Class Injector
  *
  * Handles dependency injection through constructors.
+ *
+ * @internal
  */
 class Injector {
 
@@ -29,6 +30,8 @@ class Injector {
     /**
      * Injector constructor.
      * @param ContainerInterface|null $container
+     *
+     * @internal
      */
     public function __construct(?ContainerInterface $container = null) {
         $this->container = $container;
@@ -46,6 +49,8 @@ class Injector {
      * @return null|object
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
+     *
+     * @internal
      */
     public function create(string $className, array $bindings = []) {
         try {

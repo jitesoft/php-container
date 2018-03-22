@@ -1,6 +1,6 @@
 {
     "name": "jitesoft/container",
-    "description": "Simple psr-11 dependency container with constructor injection.",
+    "description": "PSR-11 container with constructor injection.",
     "type": "library",
     "require": {
         "php": ">=7.1",
