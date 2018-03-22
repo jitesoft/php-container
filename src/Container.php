@@ -83,34 +83,34 @@ class Container implements ContainerInterface, ArrayAccess {
     }
 
     /**
-     * @param string $id
+     * @param string $abstract
      * @throws NotFoundExceptionInterface
      */
-    public function unset(string $id) {
-        if (!$this->has($id)) {
+    public function unset(string $abstract) {
+        if (!$this->has($abstract)) {
             throw new NotFoundException("Could not remove the given entity because it was not set.");
         }
 
-        unset($this->bindings[$id]);
+        unset($this->bindings[$abstract]);
     }
 
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $abstract Identifier of the entry to look for.
      *
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
      * @throws ContainerExceptionInterface Error while retrieving the entry.
      *
      * @return mixed Entry.
      */
-    public function get($id) {
-        if (array_key_exists($id, $this->bindings)) {
-            return $this->bindings[$id]->resolve(new Injector($this));
+    public function get($abstract) {
+        if (array_key_exists($abstract, $this->bindings)) {
+            return $this->bindings[$abstract]->resolve(new Injector($this));
         }
 
         throw new NotFoundException(
-            sprintf('Could not locate an entry in the container with the id "%s".', $id)
+            sprintf('Could not locate an entry in the container with the id "%s".', $abstract)
         );
     }
 
@@ -121,12 +121,12 @@ class Container implements ContainerInterface, ArrayAccess {
      * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
      * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $abstract Identifier of the entry to look for.
      *
      * @return bool
      */
-    public function has($id) {
-        return array_key_exists($id, $this->bindings);
+    public function has($abstract) {
+        return array_key_exists($abstract, $this->bindings);
     }
 
     public function offsetExists($offset) {

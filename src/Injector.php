@@ -47,6 +47,7 @@ class Injector {
      * @param string $className
      * @param array $bindings Key value bindings list. Not required if a container exists.
      * @return null|object
+     *
      * @throws NotFoundExceptionInterface
      * @throws ContainerExceptionInterface
      *
