@@ -1,0 +1,40 @@
+include:
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/php_common.yml
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/code_quality.yml
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/dependency_scanning.yml
+
+stages:
+  - build
+  - test
+  - scan
+
+build:
+  stage: build
+  extends: .php:install:dev
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 30 minutes
+
+test:
+  stage: test
+  image: jitesoft/composer:latest
+  dependencies:
+    - build
+  script:
+    - vendor/bin/phpunit tests/ --coverage-text --colors=never --whitelist=src/ 
+  coverage: '^\s*Lines:\s*\d+.\d+\%'
+
+test:style:
+  stage: test
+  image: jitesoft/composer:latest
+  dependencies:
+    - build
+  script:
+    - vendor/bin/phpcs -p ./src --report=summary --standard=./ruleset.xml
+
+scan:dep:
+  extends: .dependency_scanning
+
+scan:code:
+  extends: code_quality

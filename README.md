@@ -1,8 +1,9 @@
 # Container
 
 [![Build Status](https://travis-ci.org/jitesoft/php-container.svg?branch=master)](https://travis-ci.org/jitesoft/php-container)
-
+[![pipeline status](https://gitlab.com/jitesoft/open-source/php/datastructures/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/open-source/php/datastructures/commits/master)
 [![codecov](https://codecov.io/gh/jitesoft/php-container/branch/master/graph/badge.svg)](https://codecov.io/gh/jitesoft/php-container)
+[![coverage report](https://gitlab.com/jitesoft/open-source/php/datastructures/badges/master/coverage.svg)](https://gitlab.com/jitesoft/open-source/php/datastructures/commits/master)
 
 [IoC](https://en.wikipedia.org/wiki/Inversion_of_control) container with [constructor dependency injection](https://en.wikipedia.org/wiki/Dependency_injection).
 
@@ -145,7 +146,6 @@ $container->get('Something'); // 123
 ## License
 
 MIT
-
 
 ## Changes
 
