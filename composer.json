@@ -8,8 +8,8 @@
         "jitesoft/exceptions": "^2.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.5",
-        "squizlabs/php_codesniffer": "^3.2"
+        "phpunit/phpunit": "^8.0",
+        "squizlabs/php_codesniffer": "^3.4"
     },
     "license": "MIT",
     "authors": [
