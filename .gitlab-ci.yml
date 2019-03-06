@@ -25,7 +25,6 @@ test:
     - build
   script:
     - vendor/bin/phpunit tests/ --coverage-text --colors=never --whitelist=src/ 
-  coverage: /^\s*Lines:\s*\d+.\d+\%/
 
 test:style:
   stage: test
@@ -38,5 +37,5 @@ test:style:
 scan:dep: 
   extends: .dependency_scanning
 
-scan:code: 
+scan:code:
   extends: .code_quality
