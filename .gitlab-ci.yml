@@ -8,7 +8,7 @@ stages:
 
 test:
   stage: test
-  image: jitesoft/composer
+  image: registry.gitlab.com/jitesoft/dockerfiles/phpunit:7.2
   script:
     - composer install --prefer-dist --no-progress
     - composer test
