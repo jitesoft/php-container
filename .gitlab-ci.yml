@@ -11,3 +11,12 @@ test:
   script:
     - composer install --prefer-dist --no-progress
     - composer test
+
+scan:
+  stage: scan
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/gemnasium:2
+  script:
+    - ./analyser run
+  artifacts:
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
