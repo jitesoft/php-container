@@ -1,3 +1,6 @@
+include:
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/dependency_scanning.yml
+
 stages:
   - test
 
@@ -9,12 +12,4 @@ test:
     - composer test
 
 scan:
-  stage: test
-  image: registry.gitlab.com/gitlab-org/security-products/analyzers/gemnasium:2
-  before_script:
-    - mv /analyzer /usr/local/bin
-  script:
-    - analyzer run
-  artifacts:
-    reports:
-      dependency_scanning: gl-dependency-scanning-report.json
+  extends: .dependency_scan:composer
