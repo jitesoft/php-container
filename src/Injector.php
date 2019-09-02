@@ -29,7 +29,8 @@ class Injector {
 
     /**
      * Injector constructor.
-     * @param ContainerInterface|null $container
+     *
+     * @param ContainerInterface|null $container Container to use for resolving in case one exist.
      *
      * @internal
      */
@@ -44,12 +45,12 @@ class Injector {
      * If a binding array is passed through this method and a container already exists, the bindings will take
      * precedence over the container.
      *
-     * @param string $className
-     * @param array $bindings Key value bindings list. Not required if a container exists.
-     * @return null|object
+     * @param string $className Name of the class to create.
+     * @param array  $bindings  Key value bindings list. Not required if a container exists.
      *
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
+     * @throws ContainerException Thrown if the container fails to create class.
+     *
+     * @return null|object
      *
      * @internal
      */
@@ -57,15 +58,17 @@ class Injector {
         try {
             $class = new ReflectionClass($className);
         } catch (ReflectionException $ex) {
-            throw new ContainerException('Failed to create reflection class from given class name.');
+            throw new ContainerException(
+                'Failed to create reflection class from given class name.'
+            );
         }
 
         $out = null;
         if ($class->getConstructor() !== null) {
-            $ctr    = $class->getConstructor();
-            $params = $ctr->getParameters();
-
+            $ctr     = $class->getConstructor();
+            $params  = $ctr->getParameters();
             $inParam = [];
+
             foreach ($params as $param) {
                 $type = $this->getTypeHint($param);
                 if (array_key_exists($type, $bindings)) {
@@ -90,16 +93,19 @@ class Injector {
     }
 
     /**
-     * @param ReflectionParameter $param
+     * @param ReflectionParameter $param Reflection Parameter to get class name from.
+     *
+     * @throws NotFoundException Thrown if type hint was not found.
+     *
      * @return string
-     * @throws NotFoundException
      */
     private function getTypeHint(ReflectionParameter $param) {
         if ($param->getClass()) {
             return $param->getClass()->getName();
         }
 
-        throw new NotFoundException(sprintf(
+        throw new NotFoundException(
+            sprintf(
                 'Constructor parameter "%s" could not be created.',
                 $param->getName()
             )
