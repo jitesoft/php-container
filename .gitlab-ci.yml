@@ -11,9 +11,3 @@ test:
   script:
     - composer install --prefer-dist --no-progress
     - composer test
-
-scan:dep:
-  extends: .dependency_scanning
-
-scan:code:
-  extends: .code_quality
