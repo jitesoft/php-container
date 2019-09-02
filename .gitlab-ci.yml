@@ -3,38 +3,17 @@ include:
   - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/dependency_scanning.yml
 
 stages:
-  - build
   - test
   - scan
 
-build:
-  stage: build
-  image: jitesoft/composer
-  variables:
-  script:
-    - composer install --prefer-dist --no-progress
-  artifacts:
-    paths:
-      - vendor/
-    expire_in: 30 minutes
-
 test:
   stage: test
-  image: jitesoft/composer:latest
-  dependencies:
-    - build
+  image: jitesoft/composer
   script:
-    - vendor/bin/phpunit tests/ --coverage-text --colors=never --whitelist=src/ 
+    - composer install --prefer-dist --no-progress
+    - composer test
 
-test:style:
-  stage: test
-  image: jitesoft/composer:latest
-  dependencies:
-    - build
-  script:
-    - vendor/bin/phpcs -p ./src --report=summary --standard=./ruleset.xml
-
-scan:dep: 
+scan:dep:
   extends: .dependency_scanning
 
 scan:code:
