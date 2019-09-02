@@ -3,7 +3,6 @@ include:
 
 stages:
   - test
-  - scan
 
 test:
   stage: test
@@ -13,10 +12,12 @@ test:
     - composer test
 
 scan:
-  stage: scan
+  stage: test
   image: registry.gitlab.com/gitlab-org/security-products/analyzers/gemnasium:2
+  before_script:
+    - mv /analyser /usr/local/bin
   script:
-    - ./analyser run
+    - analyser run
   artifacts:
     reports:
       dependency_scanning: gl-dependency-scanning-report.json
