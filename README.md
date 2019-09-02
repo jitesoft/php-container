@@ -1,9 +1,8 @@
-# Container
-
-[![Build Status](https://travis-ci.org/jitesoft/php-container.svg?branch=master)](https://travis-ci.org/jitesoft/php-container)
 [![pipeline status](https://gitlab.com/jitesoft/open-source/php/container/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/open-source/php/container/commits/master)
-[![codecov](https://codecov.io/gh/jitesoft/php-container/branch/master/graph/badge.svg)](https://codecov.io/gh/jitesoft/php-container)
 [![coverage report](https://gitlab.com/jitesoft/open-source/php/container/badges/master/coverage.svg)](https://gitlab.com/jitesoft/open-source/php/container/commits/master)
+[![Back project](https://img.shields.io/badge/Open%20Collective-Tip%20the%20devs!-blue.svg)](https://opencollective.com/jitesoft-open-source)
+
+# Container
 
 [IoC](https://en.wikipedia.org/wiki/Inversion_of_control) container with [constructor dependency injection](https://en.wikipedia.org/wiki/Dependency_injection).
 
