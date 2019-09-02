@@ -27,5 +27,11 @@
         "files": [
             "tests/TestObjects.php"
         ]
+    },
+    "scripts": {
+        "test": [
+            "phpunit --configuration ./phpunit.xml --coverage-text",
+            "phpcs --report=summary --standard=./ruleset.xml -p ./src"
+        ]
     }
 }
