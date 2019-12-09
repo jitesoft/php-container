@@ -3,6 +3,7 @@ include:
 
 stages:
   - test
+  - scan
 
 test:
   stage: test
@@ -12,4 +13,4 @@ test:
     - composer test
 
 scan:
-  extends: .dependency_scan:composer
+  extends: .scan:composer
