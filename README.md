@@ -68,7 +68,7 @@ If the singleton key is true, the container will only ever create a single insta
 Example:
 
 ```php
-$conatiner = new Container([
+$container = new Container([
   InterfaceA::class => ClassA::class,
   InterfaceB::class => [
     'class' => ClassB::class,
