@@ -79,7 +79,7 @@ class Injector {
      * @param ReflectionParameter[]|array $params   List of parameters.
      * @param array                       $bindings List of bindings to use when creating objects for parameters.
      *
-     * @return array List of resolved parameters.
+     * @return mixed[]|array List of resolved parameters.
      *
      * @throws ContainerException Thrown if the container fails to create class.
      * @throws NotFoundException Thrown if type hint was not found.

@@ -61,7 +61,7 @@ class Container implements ContainerInterface, ArrayAccess {
      * @return boolean
      * @throws ContainerException Thrown in case the entry already exist.
      */
-    public function set(string $abstract, $concrete, bool $singleton = false) {
+    public function set(string $abstract, $concrete, bool $singleton = false) : bool {
         if ($this->has($abstract)) {
             throw new ContainerException(
                 sprintf('An entry with the id "%s" already exists.', $abstract)
@@ -91,7 +91,7 @@ class Container implements ContainerInterface, ArrayAccess {
      */
     public function rebind(string $abstract,
                            $concrete,
-                           bool $singleton = false) {
+                           bool $singleton = false): void {
         $this->unset($abstract);
         try {
             $this->set($abstract, $concrete, $singleton);
@@ -110,7 +110,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return void
      */
-    public function unset(string $abstract) {
+    public function unset(string $abstract): void {
         if (!$this->has($abstract)) {
             throw new NotFoundException(
                 'Could not remove the given entity because it was not set.'
@@ -126,6 +126,7 @@ class Container implements ContainerInterface, ArrayAccess {
      * @param string|mixed $abstract Identifier of the entry to look for.
      *
      * @throws NotFoundException  No entry was found for **this** identifier.
+     * @throws ContainerException On resolve error.
      *
      * @return mixed Entry.
      */
@@ -162,7 +163,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return boolean
      */
-    public function offsetExists($offset) {
+    public function offsetExists($offset): bool {
         return $this->has($offset);
     }
 
@@ -186,7 +187,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return void
      */
-    public function offsetSet($offset, $value) {
+    public function offsetSet($offset, $value): void {
         $this->set($offset, $value);
     }
 
@@ -197,7 +198,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return void
      */
-    public function offsetUnset($offset) {
+    public function offsetUnset($offset): void {
         $this->unset($offset);
     }
 
