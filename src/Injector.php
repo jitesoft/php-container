@@ -64,11 +64,13 @@ class Injector {
 
         // Does the class have a constructor?
         if ($class->getConstructor() !== null) {
-            $ctr     = $class->getConstructor();
-            $params  = $ctr->getParameters();
+            $ctr    = $class->getConstructor();
+            $params = $ctr->getParameters();
 
             // Create the new class from the parameters.
-            return $class->newInstanceArgs($this->getParameters($params, $bindings));
+            return $class->newInstanceArgs(
+                $this->getParameters($params, $bindings)
+            );
         }
 
         // No constructor, so just return a new instance.
@@ -86,18 +88,20 @@ class Injector {
      */
     private function getParameters(array $params, array $bindings): array {
         // Get all the parameters that the class require, if any.
-        return array_map(function ($param) use ($bindings) {
-            $type = $this->getTypeHint($param);
-            if (array_key_exists($type, $bindings)) {
-                return $bindings[$type];
-            }
+        return array_map(
+            function ($param) use ($bindings) {
+                $type = $this->getTypeHint($param);
+                if (array_key_exists($type, $bindings)) {
+                    return $bindings[$type];
+                }
 
-            if ($this->container->has($type)) {
-                return $this->container->get($type);
-            }
+                if ($this->container->has($type)) {
+                    return $this->container->get($type);
+                }
 
-            return $this->create($type, $bindings);
-        }, $params);
+                return $this->create($type, $bindings);
+            }, $params
+        );
     }
 
     /**

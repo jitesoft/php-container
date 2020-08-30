@@ -61,7 +61,9 @@ class Container implements ContainerInterface, ArrayAccess {
      * @return boolean
      * @throws ContainerException Thrown in case the entry already exist.
      */
-    public function set(string $abstract, $concrete, bool $singleton = false) : bool {
+    public function set(string $abstract,
+                        $concrete,
+                        bool $singleton = false): bool {
         if ($this->has($abstract)) {
             throw new ContainerException(
                 sprintf('An entry with the id "%s" already exists.', $abstract)
