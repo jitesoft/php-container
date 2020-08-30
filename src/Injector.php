@@ -8,9 +8,7 @@ namespace Jitesoft\Container;
 
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
@@ -63,33 +61,29 @@ class Injector {
             );
         }
 
-        $out = null;
         if ($class->getConstructor() !== null) {
             $ctr     = $class->getConstructor();
             $params  = $ctr->getParameters();
-            $inParam = [];
 
-            foreach ($params as $param) {
+            // Get all the parameters that the class require, if any.
+            $inParam = array_map(function ($param) use($bindings) {
                 $type = $this->getTypeHint($param);
                 if (array_key_exists($type, $bindings)) {
-                    $get = $bindings[$type];
-                } else {
-                    if ($this->container->has($type)) {
-                        $get = $this->container->get($type);
-                    } else {
-                        $get = $this->create($type, $bindings);
-                    }
+                    return $bindings[$type];
                 }
 
-                $inParam[] = $get;
-            }
+                if ($this->container->has($type)) {
+                    return $this->container->get($type);
+                }
 
-            $out = $class->newInstanceArgs($inParam);
-        } else {
-            $out = $class->newInstanceWithoutConstructor();
+                return $this->create($type, $bindings);
+            }, $params);
+
+            // Create the new class from the parameters.
+            return $class->newInstanceArgs($inParam);
         }
-
-        return $out;
+        // No constructor, so just return a new instance.
+        return $class->newInstanceWithoutConstructor();
     }
 
     /**
@@ -99,7 +93,7 @@ class Injector {
      *
      * @return string
      */
-    private function getTypeHint(ReflectionParameter $param) {
+    private function getTypeHint(ReflectionParameter $param): string {
         if ($param->getClass()) {
             return $param->getClass()->getName();
         }
