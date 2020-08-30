@@ -1,6 +1,7 @@
-[![pipeline status](https://gitlab.com/jitesoft/open-source/php/container/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/open-source/php/container/commits/master)
+[![pipeline status](https://gitlab.com/jitesoft/open-source/php/container/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/open-source/php/container/-/commits/master)
 [![coverage report](https://gitlab.com/jitesoft/open-source/php/container/badges/master/coverage.svg)](https://gitlab.com/jitesoft/open-source/php/container/commits/master)
 [![Back project](https://img.shields.io/badge/Open%20Collective-Tip%20the%20devs!-blue.svg)](https://opencollective.com/jitesoft-open-source)
+[![Maintainability](https://api.codeclimate.com/v1/badges/55642eb87b3868861d91/maintainability)](https://codeclimate.com/github/jitesoft/php-container/maintainability)
 
 # Container
 
