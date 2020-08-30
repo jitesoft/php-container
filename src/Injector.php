@@ -61,29 +61,40 @@ class Injector {
             );
         }
 
+        // Does the class have a constructor?
         if ($class->getConstructor() !== null) {
             $ctr     = $class->getConstructor();
             $params  = $ctr->getParameters();
 
-            // Get all the parameters that the class require, if any.
-            $inParam = array_map(function ($param) use($bindings) {
-                $type = $this->getTypeHint($param);
-                if (array_key_exists($type, $bindings)) {
-                    return $bindings[$type];
-                }
-
-                if ($this->container->has($type)) {
-                    return $this->container->get($type);
-                }
-
-                return $this->create($type, $bindings);
-            }, $params);
-
             // Create the new class from the parameters.
-            return $class->newInstanceArgs($inParam);
+            return $class->newInstanceArgs($this->getParameters($params, $bindings));
         }
+
         // No constructor, so just return a new instance.
         return $class->newInstanceWithoutConstructor();
+    }
+
+    /**
+     * @param ReflectionParameter[]|array $params   List of parameters.
+     * @param array                       $bindings List of bindings to use when creating objects for parameters.
+     * @return array List of resolved parameters.
+     * @throws ContainerException Thrown if the container fails to create class.
+     * @throws NotFoundException Thrown if type hint was not found.
+     */
+    private function getParameters(array $params, array $bindings): array {
+        // Get all the parameters that the class require, if any.
+        return array_map(function ($param) use ($bindings) {
+            $type = $this->getTypeHint($param);
+            if (array_key_exists($type, $bindings)) {
+                return $bindings[$type];
+            }
+
+            if ($this->container->has($type)) {
+                return $this->container->get($type);
+            }
+
+            return $this->create($type, $bindings);
+        }, $params);
     }
 
     /**
