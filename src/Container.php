@@ -9,12 +9,11 @@ namespace Jitesoft\Container;
 use ArrayAccess;
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
-use Psr\Container\ContainerInterface;
 
 /**
  * Simple naive implementation of a Dependency container with constructor injection.
  */
-class Container implements ContainerInterface, ArrayAccess {
+class Container implements ContainerInterface {
     /** @var array|ContainerEntry[] */
     protected array $bindings = [];
 
@@ -131,7 +130,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return mixed Entry.
      */
-    public function get($id) {
+    public function get($id): mixed {
         if (array_key_exists($id, $this->bindings)) {
             return $this->bindings[$id]->resolve(new Injector($this));
         }
@@ -176,7 +175,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return mixed
      */
-    public function offsetGet($offset) {
+    public function offsetGet($offset): mixed {
         return $this->get($offset);
     }
 
@@ -194,7 +193,7 @@ class Container implements ContainerInterface, ArrayAccess {
 
     /**
      * @param string|mixed $offset Offset to unset
-     *                      .
+     *
      * @throws NotFoundException Thrown if offset does not exist.
      *
      * @return void
@@ -203,4 +202,19 @@ class Container implements ContainerInterface, ArrayAccess {
         $this->unset($offset);
     }
 
+    /**
+     * Binds an abstract to a concrete.
+     *
+     * If the concrete is a object and not a string, it will be stored as it is.
+     * If the concrete is a callable, the callable will be invoked (and resolved) on resolve.
+     *
+     * @param string $abstract  Abstract value to bind the concrete value to.
+     * @param mixed  $concrete  Concrete value to bind to the abstract value.
+     *
+     * @return boolean
+     * @throws ContainerException Thrown in case the entry already exist.
+     */
+    public function singleton(string $abstract, mixed $concrete): bool {
+        return $this->set($abstract, $concrete, true);
+    }
 }

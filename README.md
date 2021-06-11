@@ -49,44 +49,62 @@ echo $c['Abstract']; // 'Concrete'
 unset($c['Abstract'];
 ```
 
-Further more, the class implements the following public methods:
+Furthermore, the class implements the following public methods:
 
 ```php
 class Container {
   public function __construct(?array $bindings);
   public function clear();
   public function set(string $abstract, mixed $concrete, ?bool $singleton = false): bool;
-  public function rebind(string $abstract, mixed $concrete, ?bool $singleton = false);
-  public function unset(string $abstract);
+  public function rebind(string $abstract, mixed $concrete, ?bool $singleton = false): void;
+  public function unset(string $abstract): void;
+  
+  public function singleton(string $abstract, mixed $concrete): void;
 }
 ```
 
 The constructor of the class takes an optional bindings array. The array expected to be an associative array
 containing the abstract as key and concrete as value. If wanted, the concrete could be another associative array with
-a `class` key containing the class to resolve to and a `singleton` key with a boolean value.  
-If the singleton key is true, the container will only ever create a single instance of the resolved value.
+a `class` or `func` key containing the class or callable to resolve to/with and a `singleton` key with a boolean value.  
+If the singleton key is true, the container will only ever create a single instance of the resolved value or only run 
+the resolve function once.
 
 Example:
 
 ```php
 $container = new Container([
+
+  // With objects:
+  InterfaceA::class => $objectInheritingInterfaceA,
+  InterfaceB::class => [
+    'class' => $objectInheritingInterfaceB,
+    'singleton' => true
+  ],
+
+  // With classes:
   InterfaceA::class => ClassA::class,
   InterfaceB::class => [
     'class' => ClassB::class,
     'singleton' => true
   ],
-  InterfaceC::class => [
-    'class' => ClassA::class,
+
+  // Or with functions:
+  InterfaceA::class => static fn (InterfaceB $ib) => new ClassA($ib),
+  InterfaceB::class => [
+    'class' => static function(InterfaceC $c) {
+      return new ClassB($c);
+    },
     'singleton' => true
-  ]
+  ],
+
 ]);
 
 $container->get(InterfaceA::class); // Will be a new object of the ClassA class.
 $container->get(InterfaceB::class); // On first call, it will be resolved to a ClassB class.
 $container->get(InterfaceB::class); // On all other calls, the object will be the same as the first call.
-$container->get(InterfaceC::class); // As with InterfaceB, this will resolve to a ClassA class on first call.
-$container->get(InterfaceC::class); // And on other calls, the same object, but not same object as InterfaceA resolves to.
 ```
+
+Alternatively to the array type singleton binding, the interface will create a singleton binding with the `singleton` method.
 
 Rebinding can be done in runtime with the `$container->rebind($a, $c, $singleton);` method.  
 This will unset the earlier binding and create a new.  
@@ -114,9 +132,9 @@ The container will, in the cases where it is able to, inject dependencies into t
 There are some requirements before it will be able to do this though:  
   
 1. The parameter need to be typehinted.
-2. The parameter need to be possible to resolve in the container.
+2. The parameter need to be possible to resolve in the container or be possible to creat without constructor.
 
-If the container can not resolve the parameter, it will throw an exception. But following the above two requirements, this should not happen.
+If the container can not resolve the parameter, it will throw an exception, but following the above two requirements, this should not happen.
 
 ```php
 class ClassA {}
