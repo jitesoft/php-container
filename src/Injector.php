@@ -11,7 +11,11 @@ use Jitesoft\Exceptions\Psr\Container\NotFoundException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
+use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
 
 /**
  * Class Injector
@@ -21,9 +25,7 @@ use ReflectionParameter;
  * @internal
  */
 class Injector {
-
-    /** @var ContainerInterface|null */
-    protected $container;
+    protected ?ContainerInterface $container;
 
     /**
      * Injector constructor.
@@ -48,12 +50,11 @@ class Injector {
      *
      * @throws ContainerException Thrown if the container fails to create class.
      * @throws NotFoundException Thrown if type hint was not found.
-     *
-     * @return null|object
+     * @throws ReflectionException Thrown if instantiation failed.
      *
      * @internal
      */
-    public function create(string $className, array $bindings = []) {
+    public function create(string $className, array $bindings = []): object {
         try {
             $class = new ReflectionClass($className);
         } catch (ReflectionException $ex) {
@@ -65,7 +66,28 @@ class Injector {
         // Does the class have a constructor?
         if ($class->getConstructor() !== null) {
             $ctr    = $class->getConstructor();
-            $params = $ctr->getParameters();
+
+            if ($ctr === null) {
+                throw new ContainerException(
+                    sprintf(
+                        'Class with name %s does not have a resolvable constructor.',
+                        $className
+                    )
+                );
+            }
+
+            try {
+                $params = $ctr->getParameters();
+            } catch (ReflectionException $ex) {
+                throw new ContainerException(
+                    sprintf(
+                        'Failed to fetch parameters from constructor from %s',
+                        $className
+                    ),
+                    $ex->getCode(),
+                    $ex
+                );
+            }
 
             // Create the new class from the parameters.
             return $class->newInstanceArgs(
@@ -78,10 +100,34 @@ class Injector {
     }
 
     /**
+     * Call the callable passed as first argument with resolved bindings depending.
+     * The injector will try to use the dependency container to resolve the parameters of the
+     * function, and will throw a ContainerException in case it fails.
+     *
+     * If a binding array is passed through this method and a container already exists, the bindings will take
+     * precedence over the container.
+     *
+     * @throws ContainerException
+     * @throws NotFoundException
+     */
+    public function invoke(callable $callable,  array $bindings = []): mixed {
+        try {
+            $func = new ReflectionFunction($callable);
+        } catch (ReflectionException $ex) {
+            throw new ContainerException(
+                'Failed to create reflection function from given callable.'
+            );
+        }
+
+        $params = $func->getParameters();
+        return $func->invoke(...$this->getParameters($params, $bindings));
+    }
+
+    /**
      * @param ReflectionParameter[]|array $params   List of parameters.
      * @param array                       $bindings List of bindings to use when creating objects for parameters.
      *
-     * @return mixed[]|array List of resolved parameters.
+     * @return array List of resolved parameters.
      *
      * @throws ContainerException Thrown if the container fails to create class.
      * @throws NotFoundException Thrown if type hint was not found.
@@ -99,7 +145,11 @@ class Injector {
                     return $this->container->get($type);
                 }
 
-                return $this->create($type, $bindings);
+                try {
+                    return $this->create($type, $bindings);
+                } catch (ReflectionException $e) {
+                    throw new ContainerException('Failed to create class.');
+                }
             }, $params
         );
     }
@@ -107,21 +157,25 @@ class Injector {
     /**
      * @param ReflectionParameter $param Reflection Parameter to get class name from.
      *
-     * @throws NotFoundException Thrown if type hint was not found.
+     * @return string Name of the parameter type.
      *
-     * @return string
+     * @throws NotFoundException Thrown if type hint was not found.
      */
     private function getTypeHint(ReflectionParameter $param): string {
-        if ($param->getClass()) {
-            return $param->getClass()->getName();
+        $type = $param->getType();
+        if (!$type || !($type instanceof ReflectionNamedType)) {
+            /** @noinspection ProperNullCoalescingOperatorUsageInspection */
+            throw new NotFoundException(
+                sprintf(
+                    'Failed to resolve type for parameter %s (type %s).',
+                    $param->getName(),
+                    $type ??  'null'
+                )
+            );
         }
 
-        throw new NotFoundException(
-            sprintf(
-                'Constructor parameter "%s" could not be created.',
-                $param->getName()
-            )
-        );
+        /** @var $type ReflectionNamedType */
+        return $type->getName();
     }
 
 }

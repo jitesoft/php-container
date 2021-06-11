@@ -15,9 +15,8 @@ use Psr\Container\ContainerInterface;
  * Simple naive implementation of a Dependency container with constructor injection.
  */
 class Container implements ContainerInterface, ArrayAccess {
-
     /** @var array|ContainerEntry[] */
-    protected $bindings = [];
+    protected array $bindings = [];
 
     /**
      * Container constructor.
@@ -46,7 +45,7 @@ class Container implements ContainerInterface, ArrayAccess {
      *
      * @return void
      */
-    public function clear() {
+    public function clear(): void {
         $this->bindings = [];
     }
 
@@ -54,15 +53,15 @@ class Container implements ContainerInterface, ArrayAccess {
      * Bind a abstract to a concrete.
      * If the concrete is a object and not a string, it will be stored as it is.
      *
-     * @param string        $abstract  Abstract value to bind the concrete value to.
-     * @param object|string $concrete  Concrete value to bind to the abstract value.
-     * @param boolean       $singleton If the created object is intended to be treated as a single instance on creation.
+     * @param string  $abstract  Abstract value to bind the concrete value to.
+     * @param mixed   $concrete  Concrete value to bind to the abstract value.
+     * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
      * @return boolean
      * @throws ContainerException Thrown in case the entry already exist.
      */
     public function set(string $abstract,
-                        $concrete,
+                        mixed $concrete,
                         bool $singleton = false): bool {
         if ($this->has($abstract)) {
             throw new ContainerException(
@@ -83,16 +82,16 @@ class Container implements ContainerInterface, ArrayAccess {
      * Re-bind a value to a given abstract.
      * This will remove the earlier entry and set a new one.
      *
-     * @param string        $abstract  Abstract value to bind the concrete value to.
-     * @param object|string $concrete  Concrete value to bind to the abstract value.
-     * @param boolean       $singleton If the created object is intended to be treated as a single instance on creation.
+     * @param string  $abstract  Abstract value to bind the concrete value to.
+     * @param mixed   $concrete  Concrete value to bind to the abstract value.
+     * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
      * @throws NotFoundException Thrown in case the 'abstract' does not exist.
      *
      * @return void
      */
     public function rebind(string $abstract,
-                           $concrete,
+                           mixed $concrete,
                            bool $singleton = false): void {
         $this->unset($abstract);
         try {
@@ -106,41 +105,41 @@ class Container implements ContainerInterface, ArrayAccess {
     /**
      * Unset a given abstract removing it from the container.
      *
-     * @param string $abstract Abstract value to remove entry for.
+     * @param string $id Identifier of the value to remove entry for.
      *
      * @throws NotFoundException Thrown if the abstract is not found.
      *
      * @return void
      */
-    public function unset(string $abstract): void {
-        if (!$this->has($abstract)) {
+    public function unset(string $id): void {
+        if (!$this->has($id)) {
             throw new NotFoundException(
                 'Could not remove the given entity because it was not set.'
             );
         }
 
-        unset($this->bindings[$abstract]);
+        unset($this->bindings[$id]);
     }
 
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
-     * @param string|mixed $abstract Identifier of the entry to look for.
+     * @param string|mixed $id Identifier of the entry to look for.
      *
      * @throws NotFoundException  No entry was found for **this** identifier.
      * @throws ContainerException On resolve error.
      *
      * @return mixed Entry.
      */
-    public function get($abstract) {
-        if (array_key_exists($abstract, $this->bindings)) {
-            return $this->bindings[$abstract]->resolve(new Injector($this));
+    public function get($id) {
+        if (array_key_exists($id, $this->bindings)) {
+            return $this->bindings[$id]->resolve(new Injector($this));
         }
 
         throw new NotFoundException(
             sprintf(
                 'Could not locate an entry in the container with the id "%s".',
-                $abstract
+                $id
             )
         );
     }
@@ -152,12 +151,12 @@ class Container implements ContainerInterface, ArrayAccess {
      * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
      * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
      *
-     * @param string|mixed $abstract Identifier of the entry to look for.
+     * @param string|mixed $id Identifier of the entry to look for.
      *
      * @return boolean
      */
-    public function has($abstract) {
-        return array_key_exists($abstract, $this->bindings);
+    public function has($id): bool {
+        return array_key_exists($id, $this->bindings);
     }
 
     /**
