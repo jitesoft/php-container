@@ -8,6 +8,7 @@ namespace Jitesoft\Container;
 
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
+use ReflectionFunction;
 
 /**
  * Class ContainerEntry
@@ -15,14 +16,11 @@ use Jitesoft\Exceptions\Psr\Container\NotFoundException;
  * @internal
  */
 class ContainerEntry {
-    /** @var string */
-    protected $abstract;
     /** @var mixed */
     protected $concrete;
-    /** @var boolean */
-    protected $isSingleton;
-    /** @var boolean */
-    protected $isCreated;
+    protected bool $isSingleton;
+    protected bool $isCreated;
+    protected string $abstract;
 
     /**
      * ContainerEntry constructor.
@@ -34,7 +32,7 @@ class ContainerEntry {
      * @internal
      */
     public function __construct(string $abstract,
-                                $concrete,
+                                mixed $concrete,
                                 bool $isSingleton = false) {
         $this->abstract    = $abstract;
         $this->concrete    = $concrete;
@@ -47,23 +45,37 @@ class ContainerEntry {
     /**
      * @param Injector $injector Injector to use for resolving.
      *
+     * @return mixed
+     *
      * @throws ContainerException Thrown in case the container fails in injection.
-     * @throws NotFoundException  Thrown in case the value is not found.
-     *
-     * @return mixed|null|object|string
-     *
+     * @throws NotFoundException Thrown in case the value is not found.
      * @internal
      */
-    public function resolve(Injector $injector) {
+    public function resolve(Injector $injector): mixed {
         if ($this->isCreated) {
             return $this->concrete;
         }
 
-        $object = $injector->create($this->concrete);
-        if ($this->isSingleton) {
-            $this->isCreated = true;
-            $this->concrete  = $object;
+        if (class_exists($this->concrete)) {
+            $object = $injector->create($this->concrete);
+            if ($this->isSingleton) {
+                $this->isCreated = true;
+                $this->concrete  = $object;
+            }
         }
+
+
+        if (is_callable($this->concrete))  {
+            $object = $injector->invoke($this->concrete);
+            if ($this->isSingleton) {
+                $this->isCreated = true;
+                $this->concrete = $object;
+            }
+
+            return $object;
+        }
+
+
 
         return $object;
     }

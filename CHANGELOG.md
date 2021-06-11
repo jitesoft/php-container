@@ -1,3 +1,9 @@
+### 5.0.0
+
+Updated php dependency to 8.0
+Updated container interface implementation to psr container version 2.
+Introduced callable injections.
+
 ### 4.0.0
 
 Removed the ContainerFactory. If one needs multiple containers, implement your own!  
