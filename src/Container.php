@@ -2,13 +2,14 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Container.php - Part of the container project.
 
-  © - Jitesoft 2017
+  © - Jitesoft
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
-use ArrayAccess;
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Simple naive implementation of a Dependency container with constructor injection.
@@ -57,7 +58,7 @@ class Container implements ContainerInterface {
      * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
      * @return boolean
-     * @throws ContainerException Thrown in case the entry already exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case the entry already exist.
      */
     public function set(string $abstract,
                         mixed $concrete,
@@ -85,7 +86,8 @@ class Container implements ContainerInterface {
      * @param mixed   $concrete  Concrete value to bind to the abstract value.
      * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
-     * @throws NotFoundException Thrown in case the 'abstract' does not exist.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown in case the 'abstract' does not exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case entry could not be set.
      *
      * @return void
      */
@@ -104,13 +106,13 @@ class Container implements ContainerInterface {
     /**
      * Unset a given abstract removing it from the container.
      *
-     * @param string $id Identifier of the value to remove entry for.
+     * @param string|mixed $id Identifier of the value to remove entry for.
      *
-     * @throws NotFoundException Thrown if the abstract is not found.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown if the abstract is not found.
      *
      * @return void
      */
-    public function unset(string $id): void {
+    public function unset(mixed $id): void {
         if (!$this->has($id)) {
             throw new NotFoundException(
                 'Could not remove the given entity because it was not set.'
@@ -125,12 +127,12 @@ class Container implements ContainerInterface {
      *
      * @param string|mixed $id Identifier of the entry to look for.
      *
-     * @throws NotFoundException  No entry was found for **this** identifier.
-     * @throws ContainerException On resolve error.
+     * @throws NotFoundException|NotFoundExceptionInterface  No entry was found for **this** identifier.
+     * @throws ContainerException|ContainerExceptionInterface On resolve error.
      *
      * @return mixed Entry.
      */
-    public function get($id): mixed {
+    public function get(mixed $id): mixed {
         if (array_key_exists($id, $this->bindings)) {
             return $this->bindings[$id]->resolve(new Injector($this));
         }
@@ -154,7 +156,7 @@ class Container implements ContainerInterface {
      *
      * @return boolean
      */
-    public function has($id): bool {
+    public function has(mixed $id): bool {
         return array_key_exists($id, $this->bindings);
     }
 
@@ -163,19 +165,19 @@ class Container implements ContainerInterface {
      *
      * @return boolean
      */
-    public function offsetExists($offset): bool {
+    public function offsetExists(mixed $offset): bool {
         return $this->has($offset);
     }
 
     /**
      * @param string|mixed $offset Offset to fetch.
      *
-     * @throws NotFoundException  No entry was found for **this** identifier.
-     * @throws ContainerException Error while retrieving the entry.
+     * @throws NotFoundException|NotFoundExceptionInterface  No entry was found for **this** identifier.
+     * @throws ContainerException|ContainerExceptionInterface Error while retrieving the entry.
      *
      * @return mixed
      */
-    public function offsetGet($offset): mixed {
+    public function offsetGet(mixed $offset): mixed {
         return $this->get($offset);
     }
 
@@ -183,22 +185,22 @@ class Container implements ContainerInterface {
      * @param string|mixed $offset Offset to set.
      * @param mixed        $value  Value to set to the offset.
      *
-     * @throws ContainerException Thrown if offset does not exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown if offset does not exist.
      *
      * @return void
      */
-    public function offsetSet($offset, $value): void {
+    public function offsetSet(mixed $offset, mixed $value): void {
         $this->set($offset, $value);
     }
 
     /**
      * @param string|mixed $offset Offset to unset
      *
-     * @throws NotFoundException Thrown if offset does not exist.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown if offset does not exist.
      *
      * @return void
      */
-    public function offsetUnset($offset): void {
+    public function offsetUnset(mixed $offset): void {
         $this->unset($offset);
     }
 
@@ -212,9 +214,10 @@ class Container implements ContainerInterface {
      * @param mixed  $concrete  Concrete value to bind to the abstract value.
      *
      * @return boolean
-     * @throws ContainerException Thrown in case the entry already exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case the entry already exist.
      */
     public function singleton(string $abstract, mixed $concrete): bool {
         return $this->set($abstract, $concrete, true);
     }
+
 }

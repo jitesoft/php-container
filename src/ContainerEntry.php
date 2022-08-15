@@ -2,13 +2,15 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   ContainerEntry.php - Part of the container project.
 
-  © - Jitesoft 2018
+  © - Jitesoft
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
-use ReflectionFunction;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
 
 /**
  * Class ContainerEntry
@@ -16,8 +18,7 @@ use ReflectionFunction;
  * @internal
  */
 class ContainerEntry {
-    /** @var mixed */
-    protected $concrete;
+    protected mixed $concrete;
     protected bool $isSingleton;
     protected bool $isCreated;
     protected string $abstract;
@@ -47,8 +48,9 @@ class ContainerEntry {
      *
      * @return mixed
      *
-     * @throws ContainerException Thrown in case the container fails in injection.
-     * @throws NotFoundException Thrown in case the value is not found.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case the container fails in injection.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown in case the value is not found.
+     * @throws ReflectionException Thrown if instantiation failed.
      * @internal
      */
     public function resolve(Injector $injector): mixed {
@@ -64,20 +66,17 @@ class ContainerEntry {
             }
         }
 
-
-        if (is_callable($this->concrete))  {
+        if (is_callable($this->concrete)) {
             $object = $injector->invoke($this->concrete);
             if ($this->isSingleton) {
                 $this->isCreated = true;
-                $this->concrete = $object;
+                $this->concrete  = $object;
             }
 
             return $object;
         }
 
-
-
-        return $object;
+        return $object ?? null;
     }
 
 }

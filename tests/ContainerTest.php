@@ -2,7 +2,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   ContainerTest.php - Part of the container project.
 
-  © - Jitesoft 2017
+  © - Jitesoft
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container\Tests;
 

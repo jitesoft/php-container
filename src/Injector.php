@@ -2,20 +2,20 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Injector.php - Part of the container project.
 
-  © - Jitesoft 2018
+  © - Jitesoft
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionType;
-use ReflectionUnionType;
 
 /**
  * Class Injector
@@ -48,8 +48,8 @@ class Injector {
      * @param string $className Name of the class to create.
      * @param array  $bindings  Key value bindings list. Not required if a container exists.
      *
-     * @throws ContainerException Thrown if the container fails to create class.
-     * @throws NotFoundException Thrown if type hint was not found.
+     * @throws ContainerException|ContainerExceptionInterface Thrown if the container fails to create class.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown if type hint was not found.
      * @throws ReflectionException Thrown if instantiation failed.
      *
      * @internal
@@ -65,12 +65,12 @@ class Injector {
 
         // Does the class have a constructor?
         if ($class->getConstructor() !== null) {
-            $ctr    = $class->getConstructor();
+            $ctr = $class->getConstructor();
 
             if ($ctr === null) {
                 throw new ContainerException(
                     sprintf(
-                        'Class with name %s does not have a resolvable constructor.',
+                        'Class with name %s does not have a constructor.',
                         $className
                     )
                 );
@@ -107,8 +107,8 @@ class Injector {
      * If a binding array is passed through this method and a container already exists, the bindings will take
      * precedence over the container.
      *
-     * @throws ContainerException
-     * @throws NotFoundException
+     * @throws ContainerException|ContainerExceptionInterface
+     * @throws NotFoundException|NotFoundExceptionInterface
      */
     public function invoke(callable $callable,  array $bindings = []): mixed {
         try {
@@ -129,8 +129,8 @@ class Injector {
      *
      * @return array List of resolved parameters.
      *
-     * @throws ContainerException Thrown if the container fails to create class.
-     * @throws NotFoundException Thrown if type hint was not found.
+     * @throws ContainerException|ContainerExceptionInterface Thrown if the container fails to create class.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown if type hint was not found.
      */
     private function getParameters(array $params, array $bindings): array {
         // Get all the parameters that the class require, if any.
@@ -163,18 +163,17 @@ class Injector {
      */
     private function getTypeHint(ReflectionParameter $param): string {
         $type = $param->getType();
-        if (!$type || !($type instanceof ReflectionNamedType)) {
-            /** @noinspection ProperNullCoalescingOperatorUsageInspection */
+        if (!($type instanceof ReflectionNamedType)) {
+            // @noinspection ProperNullCoalescingOperatorUsageInspection
             throw new NotFoundException(
                 sprintf(
                     'Failed to resolve type for parameter %s (type %s).',
                     $param->getName(),
-                    $type ??  'null'
+                    $type ?? 'null'
                 )
             );
         }
 
-        /** @var $type ReflectionNamedType */
         return $type->getName();
     }
 
