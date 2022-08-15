@@ -1,13 +1,20 @@
 <?php
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  ContainerInterface.php - Part of the container project.
 
+  © - Jitesoft
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace Jitesoft\Container;
 
 use ArrayAccess;
 use Jitesoft\Exceptions\Psr\Container\ContainerException;
 use Jitesoft\Exceptions\Psr\Container\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 interface ContainerInterface extends PsrContainerInterface, ArrayAccess {
+
     /**
      * Clear the container.
      *
@@ -26,9 +33,11 @@ interface ContainerInterface extends PsrContainerInterface, ArrayAccess {
      * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
      * @return boolean
-     * @throws ContainerException Thrown in case the entry already exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case the entry already exist.
      */
-    public function set(string $abstract, mixed $concrete, bool $singleton = false): bool;
+    public function set(string $abstract,
+                        mixed $concrete,
+                        bool $singleton = false): bool;
 
     /**
      * Re-bind a value to a given abstract.
@@ -38,18 +47,21 @@ interface ContainerInterface extends PsrContainerInterface, ArrayAccess {
      * @param mixed   $concrete  Concrete value to bind to the abstract value.
      * @param boolean $singleton If the created object is intended to be treated as a single instance on creation.
      *
-     * @throws NotFoundException Thrown in case the 'abstract' does not exist.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown in case the 'abstract' does not exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case entry could not be set.
      *
      * @return void
      */
-    public function rebind(string $abstract, mixed $concrete, bool $singleton = false): void;
+    public function rebind(string $abstract,
+                           mixed $concrete,
+                           bool $singleton = false): void;
 
     /**
      * Unset a given abstract removing it from the container.
      *
      * @param string $id Identifier of the value to remove entry for.
      *
-     * @throws NotFoundException Thrown if the abstract is not found.
+     * @throws NotFoundException|NotFoundExceptionInterface Thrown if the abstract is not found.
      *
      * @return void
      */
@@ -65,7 +77,8 @@ interface ContainerInterface extends PsrContainerInterface, ArrayAccess {
      * @param mixed  $concrete  Concrete value to bind to the abstract value.
      *
      * @return boolean
-     * @throws ContainerException Thrown in case the entry already exist.
+     * @throws ContainerException|ContainerExceptionInterface Thrown in case the entry already exist.
      */
     public function singleton(string $abstract, mixed $concrete): bool;
+
 }
